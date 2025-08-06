@@ -3,69 +3,129 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YEYY LIBARTÉ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>YEYY LIBERTÉ</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Fredoka+One&display=swap" rel="stylesheet">
 
   <style>
-    * { margin: 0; padding: 0; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
     
     body {
       overflow: hidden;
       font-family: 'Dancing Script', cursive;
       background: radial-gradient(circle, #000428 0%, #004e92 50%, #000000 100%);
-      cursor: crosshair;
       height: 100vh;
+      position: fixed;
+      width: 100%;
+      overscroll-behavior: none;
     }
 
     canvas {
       display: block;
       width: 100%;
       height: 100%;
+      touch-action: none;
     }
 
     .message {
       position: fixed;
       left: 50%;
-      top: 50%;
+      top: 45%;
       transform: translate(-50%, -50%);
       color: #ffd700;
-      font-size: clamp(2rem, 5vw, 4rem);
+      font-size: clamp(1.8rem, 8vw, 3.5rem);
       text-align: center;
       opacity: 0;
-      text-shadow: 0 0 15px #ffd700, 0 0 30px #ffff33;
-      animation: entrance 1.5s ease-out 1.5s forwards;
+      text-shadow: 
+        0 0 10px #ffd700, 
+        0 0 20px #ffff33,
+        0 0 30px rgba(255, 215, 0, 0.5);
+      animation: entrance 2s ease-out 1s forwards;
       z-index: 10;
       font-family: 'Fredoka One', cursive;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       pointer-events: none;
+      line-height: 1.1;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
 
     .subtitle {
-      font-size: 0.6em;
-      margin-top: 10px;
+      font-size: 0.55em;
+      margin-top: 8px;
       font-family: 'Dancing Script', cursive;
       color: #87ceeb;
+      text-shadow: 0 0 15px rgba(135, 206, 235, 0.8);
+      font-weight: 600;
     }
 
     .hint {
       position: fixed;
-      bottom: 20px;
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: clamp(1rem, 4vw, 1.2rem);
       opacity: 0;
-      animation: fadeIn 1s ease-in 3.5s forwards;
+      animation: fadeIn 1.5s ease-in 4s forwards, pulse 2s infinite 5s;
       pointer-events: none;
+      text-align: center;
+      padding: 0 20px;
+      font-family: 'Dancing Script', cursive;
+      font-weight: 600;
     }
 
     @keyframes entrance {
-      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
+      }
+      60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05) rotate(1deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+      }
     }
 
     @keyframes fadeIn {
       to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { 
+        transform: translateX(-50%) scale(1); 
+        opacity: 0.9; 
+      }
+      50% { 
+        transform: translateX(-50%) scale(1.03); 
+        opacity: 1; 
+      }
+    }
+
+    /* iOS Safe Area Support */
+    @supports(padding: max(0px)) {
+      .message {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+      }
+      
+      .hint {
+        bottom: max(60px, calc(env(safe-area-inset-bottom) + 20px));
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+      }
     }
   </style>
 
@@ -74,26 +134,38 @@
 <body>
   <canvas id="canvas"></canvas>
   <div class="message">
-    🎊🥳 Youpiii t'as enfin fini 🥳🎊
-    <div class="subtitle"> ⚡️🌟 Bravo, t'es le + meilleur 🌟⚡️</div>
+    🎊🥳 Youpiii t'as enfin fini ! 🥳🎊
+    <div class="subtitle">⚡️🌟 Bravo, t'es le + meilleur ! 🌟⚡️</div>
   </div>
-  <div class="hint">✨😏 Touches lʼécran pour voir un truc 😏✨</div>
+  <div class="hint">✨😏 Touches l'écran pour voir un truc 😏✨</div>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     
-    let width = canvas.width = innerWidth;
-    let height = canvas.height = innerHeight;
+    // iOS optimization
+    let width = canvas.width = window.innerWidth * (window.devicePixelRatio || 1);
+    let height = canvas.height = window.innerHeight * (window.devicePixelRatio || 1);
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
     
-    addEventListener('resize', () => {
-      width = canvas.width = innerWidth;
-      height = canvas.height = innerHeight;
+    const actualWidth = window.innerWidth;
+    const actualHeight = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+      const dpr = window.devicePixelRatio || 1;
+      width = canvas.width = window.innerWidth * dpr;
+      height = canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.scale(dpr, dpr);
     });
 
+    // Reduced particles for mobile performance
     const particlePool = [];
     const activeParticles = [];
-    const maxParticles = 800;
+    const maxParticles = window.innerWidth < 768 ? 400 : 600;
     
     const colors = ['#ffd700', '#ffff00', '#ff6b6b', '#4ecdc4', '#45b7d1', '#ff9ff3', '#54a0ff', '#feca57'];
     const sparkleColors = ['#ffffff', '#ffd700', '#87ceeb'];
@@ -110,7 +182,7 @@
         this.vy = vy;
         this.color = color;
         this.life = this.maxLife = life;
-        this.size = Math.random() * 2.5 + 1.5;
+        this.size = Math.random() * 3 + 1.5; // Slightly larger for mobile
         this.type = type;
         this.rotation = Math.random() * 6.28;
         this.rotSpeed = (Math.random() - 0.5) * 0.15;
@@ -139,7 +211,7 @@
         if (this.type === 'star') {
           ctx.rotate(this.rotation);
           ctx.fillStyle = this.color;
-          ctx.shadowBlur = 10;
+          ctx.shadowBlur = 12; // Enhanced glow for mobile
           ctx.shadowColor = this.color;
           ctx.beginPath();
           
@@ -155,9 +227,8 @@
           ctx.closePath();
           ctx.fill();
         } else {
-
           ctx.fillStyle = this.color;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 10;
           ctx.shadowColor = this.color;
           ctx.beginPath();
           ctx.arc(0, 0, this.size, 0, 6.28);
@@ -168,6 +239,7 @@
       }
     }
 
+    // Initialize particle pool
     for (let i = 0; i < maxParticles; i++) {
       particlePool.push(new Particle());
     }
@@ -190,31 +262,31 @@
     }
 
     function createExplosion(x, y, intense = false) {
-      const count = intense ? 120 : 80;
+      const count = intense ? (window.innerWidth < 768 ? 80 : 120) : 60;
       const colorArray = intense ? colors : colors.slice(0, 4);
       
       for (let i = 0; i < count; i++) {
         const angle = (6.28 * i) / count + Math.random() * 0.4;
-        const speed = Math.random() * (intense ? 10 : 7) + 3;
+        const speed = Math.random() * (intense ? 12 : 8) + 3;
         const vx = Math.cos(angle) * speed;
         const vy = Math.sin(angle) * speed;
         const color = colorArray[Math.floor(Math.random() * colorArray.length)];
-        const life = 90 + Math.random() * 40;
-        const type = Math.random() < 0.4 ? 'star' : 'circle';
+        const life = 100 + Math.random() * 50;
+        const type = Math.random() < 0.5 ? 'star' : 'circle';
         
         getParticle(x, y, vx, vy, color, life, type);
       }
     }
 
     function createSparkles(x, y) {
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 12; i++) {
         const angle = Math.random() * 6.28;
-        const speed = Math.random() * 3 + 1;
+        const speed = Math.random() * 4 + 1.5;
         const vx = Math.cos(angle) * speed;
         const vy = Math.sin(angle) * speed;
         const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
         
-        getParticle(x, y, vx, vy, color, 40, 'star');
+        getParticle(x, y, vx, vy, color, 50, 'star');
       }
     }
 
@@ -226,8 +298,8 @@
       frameCount++;
       
       if (frameCount % 2 === 0) {
-        ctx.fillStyle = 'rgba(0, 4, 40, 0.12)';
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = 'rgba(0, 4, 40, 0.15)';
+        ctx.fillRect(0, 0, actualWidth, actualHeight);
       }
 
       for (let i = activeParticles.length - 1; i >= 0; i--) {
@@ -239,61 +311,262 @@
         }
       }
 
-      if (frameCount - lastSparkle > 30 && Math.random() < 0.08) {
-        createSparkles(Math.random() * width, Math.random() * height);
+      // Random sparkles
+      if (frameCount - lastSparkle > 40 && Math.random() < 0.06) {
+        createSparkles(Math.random() * actualWidth, Math.random() * actualHeight);
         lastSparkle = frameCount;
       }
 
+      // Auto explosions (less frequent on mobile)
       autoExplosionTimer++;
-      if (autoExplosionTimer > 240) { 
-        createExplosion(Math.random() * width, Math.random() * height, true);
+      const autoDelay = window.innerWidth < 768 ? 300 : 240;
+      if (autoExplosionTimer > autoDelay) {
+        createExplosion(Math.random() * actualWidth, Math.random() * actualHeight, true);
         autoExplosionTimer = 0;
       }
 
       requestAnimationFrame(animate);
     }
 
-    let lastClick = 0;
-    let mouseMoveThrottle = 0;
+    // Web Audio API setup for sound effects
+    let audioContext;
+    let soundEnabled = false;
 
-    canvas.addEventListener('click', (e) => {
-      const now = Date.now();
-      if (now - lastClick < 100) return; 
-      lastClick = now;
-      
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      createExplosion(x, y, true);
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (frameCount - mouseMoveThrottle < 5) return; 
-      mouseMoveThrottle = frameCount;
-      
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      if (Math.random() < 0.3) {
-        createSparkles(x, y);
+    function initAudio() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        soundEnabled = true;
       }
-    });
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }
 
+    function playExplosionSound() {
+      if (!soundEnabled || !audioContext) return;
+      
+      // Create massive explosion sound
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const oscillator3 = audioContext.createOscillator();
+      const noiseBuffer = createExplosionNoiseBuffer();
+      const noiseSource = audioContext.createBufferSource();
+      
+      const gainNode1 = audioContext.createGain();
+      const gainNode2 = audioContext.createGain();
+      const gainNode3 = audioContext.createGain();
+      const noiseGain = audioContext.createGain();
+      
+      const lowpassFilter = audioContext.createBiquadFilter();
+      const distortion = audioContext.createWaveShaper();
+      
+      // Connect audio nodes for massive sound
+      oscillator1.connect(gainNode1);
+      oscillator2.connect(distortion);
+      distortion.connect(gainNode2);
+      oscillator3.connect(gainNode3);
+      noiseSource.connect(lowpassFilter);
+      lowpassFilter.connect(noiseGain);
+      
+      gainNode1.connect(audioContext.destination);
+      gainNode2.connect(audioContext.destination);
+      gainNode3.connect(audioContext.destination);
+      noiseGain.connect(audioContext.destination);
+      
+      // Set up distortion for harsh explosion sound
+      distortion.curve = makeDistortionCurve(50);
+      distortion.oversample = '4x';
+      
+      // Set up noise buffer
+      noiseSource.buffer = noiseBuffer;
+      
+      // Configure lowpass filter for rumble
+      lowpassFilter.type = 'lowpass';
+      lowpassFilter.frequency.setValueAtTime(800, audioContext.currentTime);
+      lowpassFilter.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 0.6);
+      
+      const now = audioContext.currentTime;
+      
+      // Oscillator 1: Deep bass rumble
+      oscillator1.frequency.setValueAtTime(80, now);
+      oscillator1.frequency.exponentialRampToValueAtTime(25, now + 0.8);
+      oscillator1.type = 'sawtooth';
+      
+      // Oscillator 2: Mid-range explosion crack (with distortion)
+      oscillator2.frequency.setValueAtTime(300, now);
+      oscillator2.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+      oscillator2.type = 'square';
+      
+      // Oscillator 3: High-frequency initial blast
+      oscillator3.frequency.setValueAtTime(1200, now);
+      oscillator3.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+      oscillator3.type = 'sawtooth';
+      
+      // Volume envelopes for massive impact
+      gainNode1.gain.setValueAtTime(0.6, now);
+      gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+      
+      gainNode2.gain.setValueAtTime(0.4, now);
+      gainNode2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      
+      gainNode3.gain.setValueAtTime(0.3, now);
+      gainNode3.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      
+      noiseGain.gain.setValueAtTime(0.25, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      
+      // Start all sounds
+      oscillator1.start(now);
+      oscillator2.start(now);
+      oscillator3.start(now);
+      noiseSource.start(now);
+      
+      // Stop all sounds
+      oscillator1.stop(now + 0.8);
+      oscillator2.stop(now + 0.3);
+      oscillator3.stop(now + 0.1);
+      noiseSource.stop(now + 0.5);
+    }
+
+    function createExplosionNoiseBuffer() {
+      const bufferSize = audioContext.sampleRate * 0.5; // 0.5 seconds
+      const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+      const output = buffer.getChannelData(0);
+      
+      // Generate explosive crackling noise
+      for (let i = 0; i < bufferSize; i++) {
+        // Create bursts of noise that fade
+        const decay = 1 - (i / bufferSize);
+        const burst = Math.random() > 0.7 ? Math.random() * 2 - 1 : 0;
+        output[i] = (Math.random() * 2 - 1) * decay * 0.3 + burst * decay;
+      }
+      
+      return buffer;
+    }
+
+    function makeDistortionCurve(amount) {
+      const samples = 44100;
+      const curve = new Float32Array(samples);
+      const deg = Math.PI / 180;
+      
+      for (let i = 0; i < samples; i++) {
+        const x = (i * 2) / samples - 1;
+        curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+      }
+      
+      return curve;
+    }
+
+    function playSparkleSound() {
+      if (!soundEnabled || !audioContext) return;
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
+      
+      oscillator.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Configure filter for bell-like sparkle
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2000 + Math.random() * 1000, audioContext.currentTime);
+      filter.Q.setValueAtTime(15, audioContext.currentTime);
+      
+      // Create magical sparkle sound
+      oscillator.frequency.setValueAtTime(1500 + Math.random() * 800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(3000 + Math.random() * 1000, audioContext.currentTime + 0.12);
+      
+      gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+      
+      oscillator.type = 'sine';
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.12);
+    }
+
+    // Enhanced touch handling
+    let touchStartTime = 0;
+    
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      
+      // Initialize audio on first touch (required by browsers)
+      if (!soundEnabled) {
+        initAudio();
+      }
+      
+      touchStartTime = Date.now();
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
+      const x = (touch.clientX - rect.left);
+      const y = (touch.clientY - rect.top);
       createExplosion(x, y, true);
+      
+      // Play explosion sound
+      playExplosionSound();
+      
+      // Add haptic feedback if available
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
     }, { passive: false });
 
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (Date.now() - touchStartTime > 100) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left);
+        const y = (touch.clientY - rect.top);
+        
+        if (Math.random() < 0.4) {
+          createSparkles(x, y);
+          // Play sparkle sound occasionally
+          if (Math.random() < 0.3) {
+            playSparkleSound();
+          }
+        }
+      }
+    }, { passive: false });
+
+    // Fallback for desktop with sound
+    canvas.addEventListener('click', (e) => {
+      // Initialize audio on first click (required by browsers)
+      if (!soundEnabled) {
+        initAudio();
+      }
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      createExplosion(x, y, true);
+      
+      // Play explosion sound
+      playExplosionSound();
+    });
+
+    // Initial explosion
     setTimeout(() => {
-      createExplosion(width / 2, height / 2, true);
-    }, 800);
+      createExplosion(actualWidth / 2, actualHeight / 2, true);
+    }, 1200);
 
     animate();
+
+    // Prevent iOS scroll bounce
+    document.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
   </script>
 
 </body>
