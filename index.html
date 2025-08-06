@@ -1,300 +1,201 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YEYY LIBARTÉ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>YEYY LIBERTÉ</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Fredoka+One&display=swap" rel="stylesheet">
 
   <style>
-    * { margin: 0; padding: 0; }
-    
+    * { margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; }
     body {
       overflow: hidden;
       font-family: 'Dancing Script', cursive;
       background: radial-gradient(circle, #000428 0%, #004e92 50%, #000000 100%);
-      cursor: crosshair;
       height: 100vh;
+      position: fixed;
+      width: 100%;
+      overscroll-behavior: none;
     }
-
     canvas {
       display: block;
       width: 100%;
       height: 100%;
+      touch-action: none;
     }
-
     .message {
       position: fixed;
       left: 50%;
-      top: 50%;
+      top: 45%;
       transform: translate(-50%, -50%);
       color: #ffd700;
-      font-size: clamp(2rem, 5vw, 4rem);
+      font-size: clamp(1.8rem, 8vw, 3.5rem);
       text-align: center;
       opacity: 0;
-      text-shadow: 0 0 15px #ffd700, 0 0 30px #ffff33;
-      animation: entrance 1.5s ease-out 1.5s forwards;
+      text-shadow: 0 0 10px #ffd700, 0 0 20px #ffff33, 0 0 30px rgba(255, 215, 0, 0.5);
+      animation: entrance 2s ease-out 1s forwards;
       z-index: 10;
       font-family: 'Fredoka One', cursive;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       pointer-events: none;
+      line-height: 1.1;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
-
     .subtitle {
-      font-size: 0.6em;
-      margin-top: 10px;
+      font-size: 0.55em;
+      margin-top: 8px;
       font-family: 'Dancing Script', cursive;
       color: #87ceeb;
+      text-shadow: 0 0 15px rgba(135, 206, 235, 0.8);
+      font-weight: 600;
     }
-
-    .hint {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1.1rem;
-      opacity: 0;
-      animation: fadeIn 1s ease-in 3.5s forwards;
-      pointer-events: none;
-    }
-
     @keyframes entrance {
-      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(-5deg); }
+      60% { opacity: 1; transform: translate(-50%, -50%) scale(1.05) rotate(1deg); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
     }
   </style>
-
 </head>
 
 <body>
   <canvas id="canvas"></canvas>
   <div class="message">
-    🎊🥳 Youpiii t'as enfin fini 🥳🎊
-    <div class="subtitle"> ⚡️🌟 Bravo, t'es le + meilleur 🌟⚡️</div>
+    🎊🥳 Youpiii t'as enfin fini ! 🥳🎊
+    <div class="subtitle">⚡️🌟 Bravo, t'es le + meilleur ! 🌟⚡️</div>
   </div>
-  <div class="hint">✨😏 Touches lʼécran pour voir un truc 😏✨</div>
+
+  <!-- Fireworks sound hosted -->
+  <audio id="fireworkSound" src="https://cdn.pixabay.com/download/audio/2022/02/16/audio_30aeac23fd.mp3?filename=fireworks-6286.mp3" preload="auto"></audio>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    
-    let width = canvas.width = innerWidth;
-    let height = canvas.height = innerHeight;
-    
-    addEventListener('resize', () => {
-      width = canvas.width = innerWidth;
-      height = canvas.height = innerHeight;
+    const fireworkSound = document.getElementById('fireworkSound');
+    let soundEnabled = false;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     });
 
-    const particlePool = [];
-    const activeParticles = [];
-    const maxParticles = 800;
-    
-    const colors = ['#ffd700', '#ffff00', '#ff6b6b', '#4ecdc4', '#45b7d1', '#ff9ff3', '#54a0ff', '#feca57'];
-    const sparkleColors = ['#ffffff', '#ffd700', '#87ceeb'];
-
     class Particle {
-      constructor() {
-        this.reset(0, 0, 0, 0, '#fff', 0, 'circle');
-      }
-
-      reset(x, y, vx, vy, color, life, type) {
+      constructor(x, y, vx, vy, color, life) {
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
         this.color = color;
-        this.life = this.maxLife = life;
-        this.size = Math.random() * 2.5 + 1.5;
-        this.type = type;
-        this.rotation = Math.random() * 6.28;
-        this.rotSpeed = (Math.random() - 0.5) * 0.15;
-        return this;
+        this.life = life;
+        this.maxLife = life;
+        this.size = Math.random() * 3 + 2;
       }
 
       update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vx *= 0.985;
-        this.vy *= 0.985;
-        this.vy += 0.015;
+        this.vx *= 0.98;
+        this.vy *= 0.98;
+        this.vy += 0.02;
         this.life--;
-        this.rotation += this.rotSpeed;
-        return this.life > 0;
       }
 
       draw() {
         const alpha = this.life / this.maxLife;
-        if (alpha < 0.01) return;
-
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.translate(this.x, this.y);
-        
-        if (this.type === 'star') {
-          ctx.rotate(this.rotation);
-          ctx.fillStyle = this.color;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = this.color;
-          ctx.beginPath();
-          
-          const s = this.size;
-          ctx.moveTo(0, -s);
-          ctx.lineTo(s * 0.3, -s * 0.3);
-          ctx.lineTo(s, 0);
-          ctx.lineTo(s * 0.3, s * 0.3);
-          ctx.lineTo(0, s);
-          ctx.lineTo(-s * 0.3, s * 0.3);
-          ctx.lineTo(-s, 0);
-          ctx.lineTo(-s * 0.3, -s * 0.3);
-          ctx.closePath();
-          ctx.fill();
-        } else {
-
-          ctx.fillStyle = this.color;
-          ctx.shadowBlur = 8;
-          ctx.shadowColor = this.color;
-          ctx.beginPath();
-          ctx.arc(0, 0, this.size, 0, 6.28);
-          ctx.fill();
-        }
-        
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       }
     }
 
-    for (let i = 0; i < maxParticles; i++) {
-      particlePool.push(new Particle());
-    }
+    const particles = [];
+    let animationStopped = false;
 
-    function getParticle(x, y, vx, vy, color, life, type = 'circle') {
-      if (particlePool.length > 0 && activeParticles.length < maxParticles) {
-        const p = particlePool.pop();
-        activeParticles.push(p.reset(x, y, vx, vy, color, life, type));
-        return p;
-      }
-      return null;
-    }
-
-    function returnParticle(particle) {
-      const index = activeParticles.indexOf(particle);
-      if (index > -1) {
-        activeParticles.splice(index, 1);
-        particlePool.push(particle);
-      }
-    }
-
-    function createExplosion(x, y, intense = false) {
-      const count = intense ? 120 : 80;
-      const colorArray = intense ? colors : colors.slice(0, 4);
-      
-      for (let i = 0; i < count; i++) {
-        const angle = (6.28 * i) / count + Math.random() * 0.4;
-        const speed = Math.random() * (intense ? 10 : 7) + 3;
+    function createStarExplosion(x, y) {
+      const colors = ['#ffd700', '#ffff00', '#fffacd'];
+      for (let i = 0; i < 100; i++) {
+        const angle = (Math.PI * 2 * i) / 100 + Math.random() * 0.2;
+        const speed = Math.random() * 6 + 2;
         const vx = Math.cos(angle) * speed;
         const vy = Math.sin(angle) * speed;
-        const color = colorArray[Math.floor(Math.random() * colorArray.length)];
-        const life = 90 + Math.random() * 40;
-        const type = Math.random() < 0.4 ? 'star' : 'circle';
-        
-        getParticle(x, y, vx, vy, color, life, type);
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        particles.push(new Particle(x, y, vx, vy, color, 100));
       }
     }
-
-    function createSparkles(x, y) {
-      for (let i = 0; i < 8; i++) {
-        const angle = Math.random() * 6.28;
-        const speed = Math.random() * 3 + 1;
-        const vx = Math.cos(angle) * speed;
-        const vy = Math.sin(angle) * speed;
-        const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
-        
-        getParticle(x, y, vx, vy, color, 40, 'star');
-      }
-    }
-
-    let frameCount = 0;
-    let lastSparkle = 0;
-    let autoExplosionTimer = 0;
 
     function animate() {
-      frameCount++;
-      
-      if (frameCount % 2 === 0) {
-        ctx.fillStyle = 'rgba(0, 4, 40, 0.12)';
-        ctx.fillRect(0, 0, width, height);
-      }
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      for (let i = activeParticles.length - 1; i >= 0; i--) {
-        const p = activeParticles[i];
-        if (!p.update()) {
-          returnParticle(p);
-        } else {
-          p.draw();
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+        if (p.life <= 0) {
+          particles.splice(i, 1);
         }
       }
 
-      if (frameCount - lastSparkle > 30 && Math.random() < 0.08) {
-        createSparkles(Math.random() * width, Math.random() * height);
-        lastSparkle = frameCount;
+      if (!animationStopped) {
+        requestAnimationFrame(animate);
       }
-
-      autoExplosionTimer++;
-      if (autoExplosionTimer > 240) { 
-        createExplosion(Math.random() * width, Math.random() * height, true);
-        autoExplosionTimer = 0;
-      }
-
-      requestAnimationFrame(animate);
     }
 
-    let lastClick = 0;
-    let mouseMoveThrottle = 0;
-
-    canvas.addEventListener('click', (e) => {
-      const now = Date.now();
-      if (now - lastClick < 100) return; 
-      lastClick = now;
-      
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      createExplosion(x, y, true);
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (frameCount - mouseMoveThrottle < 5) return; 
-      mouseMoveThrottle = frameCount;
-      
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      if (Math.random() < 0.3) {
-        createSparkles(x, y);
+    function playExplosionSound() {
+      if (soundEnabled) {
+        fireworkSound.currentTime = 0;
+        fireworkSound.play().catch(() => {});
       }
+    }
+
+    // First interaction unlocks audio on iOS
+    function unlockAudio() {
+      if (!soundEnabled) {
+        fireworkSound.play().then(() => {
+          soundEnabled = true;
+        }).catch(() => {});
+      }
+    }
+
+    // Click interaction
+    canvas.addEventListener('click', (e) => {
+      unlockAudio();
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      createStarExplosion(x, y);
+      playExplosionSound();
     });
 
+    // Touch interaction
     canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
+      unlockAudio();
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
       const x = touch.clientX - rect.left;
       const y = touch.clientY - rect.top;
-      createExplosion(x, y, true);
-    }, { passive: false });
+      createStarExplosion(x, y);
+      playExplosionSound();
+    }, { passive: true });
 
+    // Initial explosion after page load
     setTimeout(() => {
-      createExplosion(width / 2, height / 2, true);
-    }, 800);
+      createStarExplosion(canvas.width / 2, canvas.height / 2);
+      playExplosionSound();
+    }, 1200);
 
     animate();
   </script>
-
 </body>
 </html>
