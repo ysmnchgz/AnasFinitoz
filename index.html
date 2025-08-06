@@ -114,7 +114,6 @@
       }
     }
 
-    /* iOS Safe Area Support */
     @supports(padding: max(0px)) {
       .message {
         padding-left: max(20px, env(safe-area-inset-left));
@@ -134,16 +133,15 @@
 <body>
   <canvas id="canvas"></canvas>
   <div class="message">
-    🎊🥳 Youpiii t'as enfin fini ! 🥳🎊
-    <div class="subtitle">⚡️🌟 Bravo, t'es le + meilleur ! 🌟⚡️</div>
+    🎊🥳 Youpiii tʼas fini 🥳🎊
+    <div class="subtitle">⚡️🌟 T'es le + meilleur 🌟⚡️</div>
   </div>
-  <div class="hint">✨😏 Touches l'écran pour voir un truc 😏✨</div>
+  <div class="hint">Touches l'écran pour voir un truc 😏</div>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     
-    // iOS optimization
     let width = canvas.width = window.innerWidth * (window.devicePixelRatio || 1);
     let height = canvas.height = window.innerHeight * (window.devicePixelRatio || 1);
     canvas.style.width = window.innerWidth + 'px';
@@ -162,7 +160,6 @@
       ctx.scale(dpr, dpr);
     });
 
-    // Reduced particles for mobile performance
     const particlePool = [];
     const activeParticles = [];
     const maxParticles = window.innerWidth < 768 ? 400 : 600;
@@ -182,7 +179,7 @@
         this.vy = vy;
         this.color = color;
         this.life = this.maxLife = life;
-        this.size = Math.random() * 3 + 1.5; // Slightly larger for mobile
+        this.size = Math.random() * 3 + 1.5; 
         this.type = type;
         this.rotation = Math.random() * 6.28;
         this.rotSpeed = (Math.random() - 0.5) * 0.15;
@@ -211,7 +208,7 @@
         if (this.type === 'star') {
           ctx.rotate(this.rotation);
           ctx.fillStyle = this.color;
-          ctx.shadowBlur = 12; // Enhanced glow for mobile
+          ctx.shadowBlur = 12;
           ctx.shadowColor = this.color;
           ctx.beginPath();
           
@@ -239,7 +236,6 @@
       }
     }
 
-    // Initialize particle pool
     for (let i = 0; i < maxParticles; i++) {
       particlePool.push(new Particle());
     }
@@ -311,13 +307,11 @@
         }
       }
 
-      // Random sparkles
       if (frameCount - lastSparkle > 40 && Math.random() < 0.06) {
         createSparkles(Math.random() * actualWidth, Math.random() * actualHeight);
         lastSparkle = frameCount;
       }
 
-      // Auto explosions (less frequent on mobile)
       autoExplosionTimer++;
       const autoDelay = window.innerWidth < 768 ? 300 : 240;
       if (autoExplosionTimer > autoDelay) {
@@ -328,7 +322,6 @@
       requestAnimationFrame(animate);
     }
 
-    // Web Audio API setup for sound effects
     let audioContext;
     let soundEnabled = false;
 
@@ -345,7 +338,6 @@
     function playExplosionSound() {
       if (!soundEnabled || !audioContext) return;
       
-      // Create massive explosion sound
       const oscillator1 = audioContext.createOscillator();
       const oscillator2 = audioContext.createOscillator();
       const oscillator3 = audioContext.createOscillator();
@@ -360,7 +352,6 @@
       const lowpassFilter = audioContext.createBiquadFilter();
       const distortion = audioContext.createWaveShaper();
       
-      // Connect audio nodes for massive sound
       oscillator1.connect(gainNode1);
       oscillator2.connect(distortion);
       distortion.connect(gainNode2);
@@ -373,36 +364,29 @@
       gainNode3.connect(audioContext.destination);
       noiseGain.connect(audioContext.destination);
       
-      // Set up distortion for harsh explosion sound
       distortion.curve = makeDistortionCurve(50);
       distortion.oversample = '4x';
       
-      // Set up noise buffer
       noiseSource.buffer = noiseBuffer;
       
-      // Configure lowpass filter for rumble
       lowpassFilter.type = 'lowpass';
       lowpassFilter.frequency.setValueAtTime(800, audioContext.currentTime);
       lowpassFilter.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 0.6);
       
       const now = audioContext.currentTime;
       
-      // Oscillator 1: Deep bass rumble
       oscillator1.frequency.setValueAtTime(80, now);
       oscillator1.frequency.exponentialRampToValueAtTime(25, now + 0.8);
       oscillator1.type = 'sawtooth';
       
-      // Oscillator 2: Mid-range explosion crack (with distortion)
       oscillator2.frequency.setValueAtTime(300, now);
       oscillator2.frequency.exponentialRampToValueAtTime(80, now + 0.3);
       oscillator2.type = 'square';
       
-      // Oscillator 3: High-frequency initial blast
       oscillator3.frequency.setValueAtTime(1200, now);
       oscillator3.frequency.exponentialRampToValueAtTime(150, now + 0.1);
       oscillator3.type = 'sawtooth';
       
-      // Volume envelopes for massive impact
       gainNode1.gain.setValueAtTime(0.6, now);
       gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
       
@@ -415,13 +399,11 @@
       noiseGain.gain.setValueAtTime(0.25, now);
       noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       
-      // Start all sounds
       oscillator1.start(now);
       oscillator2.start(now);
       oscillator3.start(now);
       noiseSource.start(now);
       
-      // Stop all sounds
       oscillator1.stop(now + 0.8);
       oscillator2.stop(now + 0.3);
       oscillator3.stop(now + 0.1);
@@ -429,13 +411,11 @@
     }
 
     function createExplosionNoiseBuffer() {
-      const bufferSize = audioContext.sampleRate * 0.5; // 0.5 seconds
+      const bufferSize = audioContext.sampleRate * 0.5; 
       const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
       const output = buffer.getChannelData(0);
       
-      // Generate explosive crackling noise
       for (let i = 0; i < bufferSize; i++) {
-        // Create bursts of noise that fade
         const decay = 1 - (i / bufferSize);
         const burst = Math.random() > 0.7 ? Math.random() * 2 - 1 : 0;
         output[i] = (Math.random() * 2 - 1) * decay * 0.3 + burst * decay;
@@ -468,12 +448,10 @@
       filter.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      // Configure filter for bell-like sparkle
       filter.type = 'bandpass';
       filter.frequency.setValueAtTime(2000 + Math.random() * 1000, audioContext.currentTime);
       filter.Q.setValueAtTime(15, audioContext.currentTime);
       
-      // Create magical sparkle sound
       oscillator.frequency.setValueAtTime(1500 + Math.random() * 800, audioContext.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(3000 + Math.random() * 1000, audioContext.currentTime + 0.12);
       
@@ -485,13 +463,11 @@
       oscillator.stop(audioContext.currentTime + 0.12);
     }
 
-    // Enhanced touch handling
     let touchStartTime = 0;
     
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       
-      // Initialize audio on first touch (required by browsers)
       if (!soundEnabled) {
         initAudio();
       }
@@ -503,10 +479,8 @@
       const y = (touch.clientY - rect.top);
       createExplosion(x, y, true);
       
-      // Play explosion sound
       playExplosionSound();
       
-      // Add haptic feedback if available
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
       }
@@ -522,7 +496,6 @@
         
         if (Math.random() < 0.4) {
           createSparkles(x, y);
-          // Play sparkle sound occasionally
           if (Math.random() < 0.3) {
             playSparkleSound();
           }
@@ -530,9 +503,7 @@
       }
     }, { passive: false });
 
-    // Fallback for desktop with sound
     canvas.addEventListener('click', (e) => {
-      // Initialize audio on first click (required by browsers)
       if (!soundEnabled) {
         initAudio();
       }
@@ -542,23 +513,19 @@
       const y = e.clientY - rect.top;
       createExplosion(x, y, true);
       
-      // Play explosion sound
       playExplosionSound();
     });
 
-    // Initial explosion
     setTimeout(() => {
       createExplosion(actualWidth / 2, actualHeight / 2, true);
     }, 1200);
 
     animate();
 
-    // Prevent iOS scroll bounce
     document.addEventListener('touchmove', (e) => {
       e.preventDefault();
     }, { passive: false });
 
-    // Prevent zoom on double tap
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = (new Date()).getTime();
